@@ -24,6 +24,7 @@ import (
 )
 
 // DefaultOption default tcp options
+// tcp的默认配置选项
 var DefaultOption = &Options{
 	Timeout:         time.Second * 5,
 	KeepAlive:       true,
@@ -44,7 +45,8 @@ type Options struct {
 
 var contextKey = struct{ key string }{"go-netty-transport-tcp-options"}
 
-// WithOptions to wrap the tcp options
+// WithOptions to wrap the tcp
+// 包装到传输层的配置里
 func WithOptions(option *Options) transport.Option {
 	return func(options *transport.Options) error {
 		options.Context = context.WithValue(options.Context, contextKey, option)
@@ -53,6 +55,7 @@ func WithOptions(option *Options) transport.Option {
 }
 
 // FromContext to unwrap the tcp options
+// 从context中提取出options配置，不存在就返回默认的def配置
 func FromContext(ctx context.Context, def *Options) *Options {
 	if v, ok := ctx.Value(contextKey).(*Options); ok {
 		return v

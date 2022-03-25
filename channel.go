@@ -29,6 +29,7 @@ import (
 )
 
 // Channel is defines a server-side-channel & client-side-channel
+// Channel定义了服务器端通道和客户端通道
 type Channel interface {
 	// ID channel id
 	ID() int64
@@ -58,18 +59,20 @@ type Channel interface {
 	Transport() transport.Transport
 
 	// Pipeline get pipeline of channel
+	// 获取关联的流水线
 	Pipeline() Pipeline
 
 	// Attachment get attachment
 	Attachment() Attachment
 
-	// SetAttachment set attachment
+	// SetAttachment set attachment 设置附带信息
 	SetAttachment(Attachment)
 
 	// Context channel context
 	Context() context.Context
 
 	// Start send & write routines.
+	// 开启链接的读写请求
 	serveChannel()
 }
 
@@ -89,6 +92,7 @@ func NewBufferedChannel(capacity int, sizeRead int) ChannelFactory {
 }
 
 // newChannelWith internal method for NewChannel & NewBufferedChannel
+// 具有容量的channel
 func newChannelWith(ctx context.Context, pipeline Pipeline, transport transport.Transport, id int64, capacity int) Channel {
 	childCtx, cancel := context.WithCancel(ctx)
 	return &channel{
@@ -103,18 +107,18 @@ func newChannelWith(ctx context.Context, pipeline Pipeline, transport transport.
 
 // implement of Channel
 type channel struct {
-	id         int64
-	ctx        context.Context
-	cancel     context.CancelFunc
-	transport  transport.Transport
-	pipeline   Pipeline
+	id         int64               // 序列号
+	ctx        context.Context     // 当前的ctx
+	cancel     context.CancelFunc  // ctx取消函数
+	transport  transport.Transport // 链接
+	pipeline   Pipeline            // 归属的流水线
 	attachment Attachment
-	sendQueue  chan [][]byte
+	sendQueue  chan [][]byte // chan
 	activeWait sync.WaitGroup
 	closed     int32
 }
 
-// ID get channel id
+// ID get channel id 获取channel的id
 func (c *channel) ID() int64 {
 	return c.id
 }
@@ -178,6 +182,7 @@ func (c *channel) Transport() transport.Transport {
 }
 
 // Pipeline get pipeline of channel
+// 获取当前channel的流水线
 func (c *channel) Pipeline() Pipeline {
 	return c.pipeline
 }
@@ -208,6 +213,7 @@ func (c *channel) Context() context.Context {
 }
 
 // start write & read routines
+// 开启链接读写
 func (c *channel) serveChannel() {
 	c.activeWait.Add(1)
 	go c.readLoop()
@@ -215,6 +221,7 @@ func (c *channel) serveChannel() {
 	c.activeWait.Wait()
 }
 
+// 捕捉recover的包装函数
 func (c *channel) invokeMethod(fn func()) {
 
 	defer func() {

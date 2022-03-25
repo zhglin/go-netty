@@ -26,6 +26,7 @@ import (
 )
 
 // Bootstrap makes it easy to bootstrap a channel
+// 外面包装的一层 方便使用
 type Bootstrap interface {
 	// Context return context
 	Context() context.Context
@@ -38,6 +39,7 @@ type Bootstrap interface {
 }
 
 // NewBootstrap create a new Bootstrap with default config.
+// 使用默认配置创建一个新的Bootstrap。
 func NewBootstrap(option ...Option) Bootstrap {
 
 	opts := &bootstrapOptions{
@@ -58,7 +60,7 @@ func NewBootstrap(option ...Option) Bootstrap {
 // bootstrap implement
 type bootstrap struct {
 	*bootstrapOptions
-	listeners sync.Map // url - Listener
+	listeners sync.Map // url - Listener 服务器端的listener
 }
 
 // Context to get context
@@ -67,23 +69,24 @@ func (bs *bootstrap) Context() context.Context {
 }
 
 // serveTransport to serve channel
+// 服务器端处理已建立的客户端链接
 func (bs *bootstrap) serveTransport(transport transport.Transport, attachment Attachment, childChannel bool) Channel {
 
-	// create a new pipeline
+	// create a new pipeline 创建消息处理流水线
 	pipeline := bs.pipelineFactory()
 
-	// generate a channel id
+	// generate a channel id  id生成器
 	cid := bs.channelIDFactory()
 
-	// create a channel
+	// create a channel 创建channel
 	channel := bs.channelFactory(cid, bs.bootstrapCtx, pipeline, transport)
 
-	// set the attachment if necessary
+	// set the attachment if necessary 如有必要，设置附带信息
 	if nil != attachment {
 		channel.SetAttachment(attachment)
 	}
 
-	// initialization pipeline
+	// initialization pipeline 初始化流水线
 	if childChannel {
 		bs.childInitializer(channel)
 	} else {
@@ -114,6 +117,7 @@ func (bs *bootstrap) Connect(url string, attachment Attachment, option ...transp
 }
 
 // Listen to the address with options
+// 服务器端进行lister
 func (bs *bootstrap) Listen(url string, option ...transport.Option) Listener {
 	l := &listener{bs: bs, url: url, option: option}
 	bs.listeners.Store(url, l)
@@ -135,8 +139,10 @@ func (bs *bootstrap) removeListener(url string) {
 	bs.listeners.Delete(url)
 }
 
+// Listener 服务器端接口
 type Listener interface {
 	// Close the listener
+	// 关闭链接
 	Close() error
 	// Sync waits for this listener until it is done
 	Sync() error
@@ -150,10 +156,11 @@ type listener struct {
 	url      string
 	option   []transport.Option
 	options  *transport.Options
-	acceptor transport.Acceptor
+	acceptor transport.Acceptor // 服务器端监听链接
 }
 
 // Close listener
+// 服务器端关闭
 func (l *listener) Close() error {
 	if l.acceptor != nil {
 		l.bs.removeListener(l.url)
@@ -162,8 +169,10 @@ func (l *listener) Close() error {
 	return nil
 }
 
+// Sync 服务器端监听并获取客户端链接
 func (l *listener) Sync() error {
 
+	// 链接已经建立过了
 	if nil != l.acceptor {
 		return fmt.Errorf("duplicate call Listener:Sync")
 	}
@@ -173,12 +182,13 @@ func (l *listener) Sync() error {
 		return err
 	}
 
+	// 建立服务器端传输层链接
 	if l.acceptor, err = l.bs.transportFactory.Listen(l.options); nil != err {
 		return err
 	}
 
 	for {
-		// accept the transport
+		// accept the transport 接收链接
 		t, err := l.acceptor.Accept()
 		if nil != err {
 			return err
@@ -195,6 +205,7 @@ func (l *listener) Sync() error {
 	}
 }
 
+// Async 异步处理
 func (l *listener) Async(fn func(err error)) {
 	go func() {
 		fn(l.Sync())

@@ -156,7 +156,7 @@ type EventHandlerFunc func(ctx EventContext, event Event)
 // HandleEvent to impl EventHandler
 func (fn EventHandlerFunc) HandleEvent(ctx EventContext, event Event) { fn(ctx, event) }
 
-// headHandler
+// headHandler 消息头的处理handler
 type headHandler struct{}
 
 func (*headHandler) HandleWrite(ctx OutboundContext, message Message) {
@@ -186,6 +186,7 @@ func (*headHandler) HandleWrite(ctx OutboundContext, message Message) {
 
 // default: tailHandler
 // The final closing operation will be provided when the user registered handler is not processing.
+// 消息尾的处理handler 最终的关闭操作将在用户注册的处理程序未进行处理时提供。
 type tailHandler struct{}
 
 func (*tailHandler) HandleException(ctx ExceptionContext, ex Exception) {

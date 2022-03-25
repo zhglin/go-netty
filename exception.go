@@ -24,6 +24,7 @@ import (
 )
 
 // Exception defines an exception
+// 异常的接口
 type Exception interface {
 	// Unwrap inner error.
 	Unwrap() error
@@ -36,6 +37,7 @@ type Exception interface {
 }
 
 // AsException to wrap error to Exception
+// AsException将错误包装为Exception
 func AsException(e interface{}, stack []byte) Exception {
 
 	switch err := e.(type) {
@@ -51,27 +53,32 @@ func AsException(e interface{}, stack []byte) Exception {
 }
 
 // exception impl Exception
+// Exception接口实现
 type exception struct {
 	error error
 	stack []byte
 }
 
 // Unwrap to unwrap inner error
+// exception解析成error
 func (e exception) Unwrap() error {
 	return e.error
 }
 
 // Error to get error message
+// 返回error的信息
 func (e exception) Error() string {
 	return e.error.Error()
 }
 
 // Stack to get exception stack trace
+// 返回exception中的栈信息
 func (e exception) Stack() []byte {
 	return e.stack
 }
 
 // PrintStackTrace to write stack trance info to writer
+// 写入信息
 func (e exception) PrintStackTrace(writer io.Writer, msg ...string) {
 
 	// default: write to stderr.
@@ -91,7 +98,7 @@ func (e exception) PrintStackTrace(writer io.Writer, msg ...string) {
 	for {
 		i++
 		sb.WriteString(fmt.Sprintf("%T: %s", err, err.Error()))
-		if e, ok := err.(interface{ Unwrap() error }); ok {
+		if e, ok := err.(interface{ Unwrap() error }); ok { // 递归解析err是否实现Unwrap() error接口
 			sb.WriteString("\n" + strings.Repeat("  ", i))
 			err = e.Unwrap()
 			continue

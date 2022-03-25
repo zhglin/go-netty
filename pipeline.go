@@ -23,18 +23,23 @@ import (
 )
 
 // Pipeline defines a message processing pipeline.
+// 定义消息处理流水线。
 type Pipeline interface {
 
 	// AddFirst add a handler to the first.
+	// 头部添加handler
 	AddFirst(handlers ...Handler) Pipeline
 
 	// AddLast add a handler to the last.
+	// 尾部添加handler
 	AddLast(handlers ...Handler) Pipeline
 
 	// AddHandler add handlers in position.
+	// 指定位置添加handler
 	AddHandler(position int, handlers ...Handler) Pipeline
 
 	// IndexOf find fist index of handler.
+	// 通过比较函数返回指定handler所在下标
 	IndexOf(func(Handler) bool) int
 
 	// LastIndexOf find last index of handler.
@@ -61,15 +66,18 @@ type Pipeline interface {
 }
 
 // NewPipeline convert to PipelineFactory
+// 创建消息处理流水线
 func NewPipeline() PipelineFactory {
 	return NewPipelineWith
 }
 
 // NewPipelineWith create a pipeline.
+// 创建流水线
 func NewPipelineWith() Pipeline {
 
 	p := &pipeline{}
 
+	// 设置消息头的handler
 	p.head = &handlerContext{
 		pipeline: p,
 		handler:  new(headHandler),
@@ -90,13 +98,13 @@ func NewPipelineWith() Pipeline {
 
 // pipeline to implement Pipeline
 type pipeline struct {
-	head    *handlerContext
-	tail    *handlerContext
-	channel Channel
-	size    int
+	head    *handlerContext // 头
+	tail    *handlerContext // 尾
+	channel Channel         // 关联的channel
+	size    int             // 流水线中handler中的数量
 }
 
-// AddFirst to add handlers at head
+// AddFirst to add handlers at head 头部添加handler
 func (p *pipeline) AddFirst(handlers ...Handler) Pipeline {
 	// checking handler.
 	checkHandler(handlers...)
@@ -107,7 +115,7 @@ func (p *pipeline) AddFirst(handlers ...Handler) Pipeline {
 	return p
 }
 
-// AddLast to add handlers at tail
+// AddLast to add handlers at tail 尾部添加
 func (p *pipeline) AddLast(handlers ...Handler) Pipeline {
 	// checking handler.
 	checkHandler(handlers...)
@@ -118,7 +126,7 @@ func (p *pipeline) AddLast(handlers ...Handler) Pipeline {
 	return p
 }
 
-// AddHandler to insert handlers in position
+// AddHandler to insert handlers in position 指定位置添加handler
 func (p *pipeline) AddHandler(position int, handlers ...Handler) Pipeline {
 
 	// checking handler.
@@ -131,6 +139,7 @@ func (p *pipeline) AddHandler(position int, handlers ...Handler) Pipeline {
 		return p.AddLast(handlers...)
 	}
 
+	// 找到i位置的node
 	curNode := p.head
 	for i := 0; i < position; i++ {
 		curNode = curNode.next
@@ -243,6 +252,7 @@ func (p *pipeline) Channel() Channel {
 }
 
 // ServeChannel serveChannel to serve the channel
+// 关联channel
 func (p *pipeline) ServeChannel(channel Channel) {
 
 	utils.AssertIf(nil != p.channel, "already attached channel")
@@ -275,6 +285,7 @@ func (p *pipeline) FireChannelEvent(event Event) {
 }
 
 // checkHandler to checking handlers
+// 校验handler是否合法
 func checkHandler(handlers ...Handler) {
 
 	for index, h := range handlers {

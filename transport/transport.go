@@ -59,6 +59,7 @@ type BuffersWriter interface {
 }
 
 // Transport defines a transport
+// 客户端链接
 type Transport interface {
 	net.Conn
 
@@ -73,33 +74,39 @@ type Transport interface {
 }
 
 // Acceptor defines transport acceptor
+// 传输层服务器端的acceptor
 type Acceptor interface {
-	Accept() (Transport, error)
-	Close() error
+	Accept() (Transport, error) // 监听链接
+	Close() error               // 关闭链接
 }
 
 // Factory defines transport factory
+// 传输层协议接口
 type Factory interface {
 
 	// Schemes supported schemes.
+	// 支持的协议名称
 	Schemes() Schemes
 
 	// Connect to the peer with the specified address.
+	// 客户端建立链接  返回客户端链接
 	Connect(options *Options) (Transport, error)
 
 	// Listen for an address and accept the connection request.
+	// 服务器端监听地址并接受连接请求。 返回服务器端链接
 	Listen(options *Options) (Acceptor, error)
 }
 
 // Schemes to define scheme list
+// 协议列表
 type Schemes []string
 
-// FixedURL to fix scheme
+// FixedURL to fix scheme 修复Scheme
 func (ss Schemes) FixedURL(u *url.URL) error {
 	switch {
-	case "" == u.Scheme:
+	case "" == u.Scheme: // 设置默认的scheme
 		u.Scheme = ss[0]
-	case !ss.Valid(u.Scheme):
+	case !ss.Valid(u.Scheme): // 是否支持此scheme
 		return fmt.Errorf("invalid scheme, %s, available: %v", u.Scheme, ss)
 	}
 	return nil

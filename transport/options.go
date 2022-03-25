@@ -30,16 +30,19 @@ import (
 type Option func(options *Options) error
 
 // Options for transport
+// 传输层的配置属性
 type Options struct {
-	// In server side: listen address.
-	// In client side: connect address.
+	// In server side: listen address.  服务器端:监听地址。
+	// In client side: connect address. 客户端:连接地址。
 	Address *url.URL
 
 	// other configure pass by context.WithValue
+	// 其他配置通过上下文传递
 	Context context.Context
 }
 
 // AddressWithoutHost convert host:port to :port
+// 将"host:port"转换为":port"
 func (lo *Options) AddressWithoutHost() string {
 	_, port, err := net.SplitHostPort(lo.Address.Host)
 	utils.Assert(err)
@@ -63,6 +66,7 @@ func ParseOptions(ctx context.Context, url string, options ...Option) (*Options,
 }
 
 // withAddress for server listener or client dialer
+// withAddress服务器监听器或客户端拨号器的地址
 func withAddress(address string) Option {
 	return func(options *Options) (err error) {
 		if options.Address, err = url.Parse(address); nil != err {

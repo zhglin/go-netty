@@ -25,6 +25,7 @@ import (
 
 type (
 	// ChannelInitializer to init the pipeline of channel
+	// channel初始化 初始化内部流水线handler
 	ChannelInitializer func(Channel)
 	// ChannelFactory to create a channel
 	ChannelFactory func(id int64, ctx context.Context, pipeline Pipeline, transport transport.Transport) Channel
@@ -32,23 +33,24 @@ type (
 	PipelineFactory func() Pipeline
 	// TransportFactory tp create transport
 	TransportFactory transport.Factory
-	// ChannelIDFactory to create channel id
+	// ChannelIDFactory to create channel id id生成器
 	ChannelIDFactory func() int64
 
 	// bootstrapOptions
 	bootstrapOptions struct {
 		bootstrapCtx      context.Context
 		bootstrapCancel   context.CancelFunc
-		clientInitializer ChannelInitializer
-		childInitializer  ChannelInitializer
-		transportFactory  TransportFactory
+		clientInitializer ChannelInitializer // 手动指定消息流水线
+		childInitializer  ChannelInitializer // 手动指定消息流水线
+		transportFactory  TransportFactory   // 传输层协议实现  tcp
 		channelFactory    ChannelFactory
 		pipelineFactory   PipelineFactory
-		channelIDFactory  ChannelIDFactory
+		channelIDFactory  ChannelIDFactory // id生成器
 	}
 )
 
 // SequenceID to generate a sequence id
+// 生成一个序列id
 func SequenceID() ChannelIDFactory {
 	var id int64
 	return func() int64 {

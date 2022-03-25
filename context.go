@@ -68,11 +68,12 @@ type (
 )
 
 // handlerContext impl HandlerContext
+// handler处理链
 type handlerContext struct {
 	pipeline Pipeline
-	handler  Handler
-	prev     *handlerContext
-	next     *handlerContext
+	handler  Handler         // 当前的handler
+	prev     *handlerContext // 上一个handler
+	next     *handlerContext // 下一个handler
 }
 
 func (hc *handlerContext) prevContext() *handlerContext {
