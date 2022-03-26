@@ -226,6 +226,7 @@ func (c *channel) invokeMethod(fn func()) {
 
 	defer func() {
 		if err := recover(); nil != err && 0 == atomic.LoadInt32(&c.closed) {
+			// 如果panic 并且未关闭 调用异常的handler
 			c.pipeline.FireChannelException(AsException(err, debug.Stack()))
 
 			if e, ok := err.(error); ok {

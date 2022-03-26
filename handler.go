@@ -47,6 +47,7 @@ type (
 
 	// Handler defines an any handler
 	// At least one or more of the following types should be implemented
+	// 消息处理handler，应该实现以下至少一个或多个类型
 	// ActiveHandler
 	// InboundHandler
 	// OutboundHandler
@@ -62,6 +63,7 @@ type (
 	}
 
 	// InboundHandler defines an Inbound handler
+	// 定义入站请求处理程序
 	InboundHandler interface {
 		HandleRead(ctx InboundContext, message Message)
 	}
@@ -72,6 +74,7 @@ type (
 	}
 
 	// ExceptionHandler defines an exception handler
+	// 定义异常处理程序
 	ExceptionHandler interface {
 		HandleException(ctx ExceptionContext, ex Exception)
 	}
@@ -156,7 +159,7 @@ type EventHandlerFunc func(ctx EventContext, event Event)
 // HandleEvent to impl EventHandler
 func (fn EventHandlerFunc) HandleEvent(ctx EventContext, event Event) { fn(ctx, event) }
 
-// headHandler 消息头的处理handler
+// headHandler 默认的写入处理
 type headHandler struct{}
 
 func (*headHandler) HandleWrite(ctx OutboundContext, message Message) {

@@ -55,11 +55,14 @@ type Pipeline interface {
 	Channel() Channel
 
 	// ServeChannel serve the channel.
+	// 关联channel 启动读写
 	ServeChannel(channel Channel)
 
 	FireChannelActive()
+	// FireChannelRead 从head开始执行读的handler  message可以是个链接 也可以是从链接中读取到的消息
 	FireChannelRead(message Message)
 	FireChannelWrite(message Message)
+	// FireChannelException 链接异常的处理handler
 	FireChannelException(ex Exception)
 	FireChannelInactive(ex Exception)
 	FireChannelEvent(event Event)
@@ -264,6 +267,7 @@ func (p *pipeline) FireChannelActive() {
 	p.head.HandleActive()
 }
 
+// FireChannelRead 从head开始执行读的handler
 func (p *pipeline) FireChannelRead(message Message) {
 	p.head.HandleRead(message)
 }
@@ -272,6 +276,7 @@ func (p *pipeline) FireChannelWrite(message Message) {
 	p.tail.HandleWrite(message)
 }
 
+// FireChannelException 链接异常的处理handler
 func (p *pipeline) FireChannelException(ex Exception) {
 	p.head.HandleException(ex)
 }

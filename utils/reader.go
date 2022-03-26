@@ -79,10 +79,11 @@ func MustToReader(message interface{}) io.Reader {
 }
 
 // ToBytes unwrap a message to []byte
+// 把message转换成[]byte
 func ToBytes(message interface{}) ([]byte, error) {
 
 	switch r := message.(type) {
-	case io.Reader:
+	case io.Reader: // 如果是链接，直接读取出来内容
 		return ioutil.ReadAll(r)
 	case []byte:
 		return r, nil

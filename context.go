@@ -37,6 +37,7 @@ type (
 	}
 
 	// InboundContext defines an inbound handler
+	// 定义入站请求处理程序
 	InboundContext interface {
 		HandlerContext
 		HandleRead(message Message)
@@ -164,6 +165,7 @@ func (hc *handlerContext) HandleActive() {
 	}
 }
 
+// HandleRead 读取请求
 func (hc *handlerContext) HandleRead(message Message) {
 	var next = hc
 
@@ -172,6 +174,7 @@ func (hc *handlerContext) HandleRead(message Message) {
 			break
 		}
 
+		// 只读取下一个InboundHandler
 		if handler, ok := next.Handler().(InboundHandler); ok {
 			handler.HandleRead(next, message)
 			break
